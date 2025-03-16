@@ -1,24 +1,37 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref } from "vue";
 import { useToast } from "primevue/usetoast";
+import Calendar from "primevue/calendar";
 import DefaultButton from "@/components/DefaultButton.vue";
+import Conversion from "@/utils/Conversions"; // Import Conversion class
 
 // Initialize doctor availability
-const availableTimings = ref<{ day: string; startTime: string; endTime: string }[]>([
-  { day: "Monday", startTime: "09:00 AM", endTime: "05:00 PM" },
-  { day: "Wednesday", startTime: "10:00 AM", endTime: "04:00 PM" },
+const availableTimings = ref<{ dateRange: string; startTime: string; endTime: string }[]>([
+  { dateRange: "20 Mar 2025 - 22 Mar 2025", startTime: "09:00 AM", endTime: "05:00 PM" },
+  { dateRange: "25 Mar 2025 - 27 Mar 2025", startTime: "10:00 AM", endTime: "04:00 PM" },
 ]);
 
 // Temporary variables for adding new availability
-const selectedDay = ref<string>();
-const startTime = ref<string>();
-const endTime = ref<string>();
-
+const dateRange = ref<Date[] | null>(null);
+const startTime = ref<Date | null>(null);
+const endTime = ref<Date | null>(null);
 const toast = useToast();
 
-// Function to add a new timing
+// Function to format the date range using Conversion.toDateFormat
+const formatDateRange = (range: Date[] | null) => {
+  if (!range || range.length < 2) return "";
+  return `${Conversion.toDateFormat(range[0].getTime())} - ${Conversion.toDateFormat(range[1].getTime())}`;
+};
+
+// Function to format time as AM/PM
+const formatTime = (time: Date | null) => {
+  if (!time) return "";
+  return time.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: true });
+};
+
+// Function to validate and add a new timing
 const addTiming = () => {
-  if (!selectedDay.value || !startTime.value || !endTime.value) {
+  if (!dateRange.value || !startTime.value || !endTime.value) {
     toast.add({
       severity: "error",
       summary: "Validation Error",
@@ -28,11 +41,65 @@ const addTiming = () => {
     return;
   }
 
-  // Add to availability list
+  // Validate date range (must be today or future)
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  if (dateRange.value[0] < today || dateRange.value[1] < today) {
+    toast.add({
+      severity: "error",
+      summary: "Invalid Date Range",
+      detail: "Selected dates must be today or in the future.",
+      life: 3000,
+    });
+    return;
+  }
+
+  // Ensure start and end times are different
+  if (startTime.value.getTime() === endTime.value.getTime()) {
+    toast.add({
+      severity: "error",
+      summary: "Invalid Time Selection",
+      detail: "Start time and end time cannot be the same.",
+      life: 3000,
+    });
+    return;
+  }
+
+  // Ensure end time is after start time within the same day
+  const startHour = startTime.value.getHours();
+  const startMinutes = startTime.value.getMinutes();
+  const endHour = endTime.value.getHours();
+  const endMinutes = endTime.value.getMinutes();
+
+  if (endHour < startHour || (endHour === startHour && endMinutes <= startMinutes)) {
+    toast.add({
+      severity: "error",
+      summary: "Invalid Time Selection",
+      detail: "End time must be later than start time on the same day.",
+      life: 3000,
+    });
+    return;
+  }
+
+  // Check for duplicate date ranges
+  const newDateRange = formatDateRange(dateRange.value);
+  const isDuplicate = availableTimings.value.some((timing) => timing.dateRange === newDateRange);
+
+  if (isDuplicate) {
+    toast.add({
+      severity: "error",
+      summary: "Duplicate Entry",
+      detail: "This date range is already added.",
+      life: 3000,
+    });
+    return;
+  }
+
+  // Add new timing
   availableTimings.value.push({
-    day: selectedDay.value,
-    startTime: startTime.value,
-    endTime: endTime.value,
+    dateRange: newDateRange,
+    startTime: formatTime(startTime.value),
+    endTime: formatTime(endTime.value),
   });
 
   toast.add({
@@ -42,10 +109,10 @@ const addTiming = () => {
     life: 3000,
   });
 
-  // Reset fields
-  selectedDay.value = "";
-  startTime.value = "";
-  endTime.value = "";
+  // Reset form fields
+  dateRange.value = null;
+  startTime.value = null;
+  endTime.value = null;
 };
 
 // Function to remove an existing timing
@@ -62,6 +129,9 @@ const removeTiming = (index: number) => {
 
 <template>
   <div class="doctor-card p-5 rounded-card">
+    <!-- Toast Messages -->
+    <Toast />
+
     <!-- Page Title -->
     <div class="page-title mb-5">
       <h1 class="text-2xl font-semibold text-gray-800">Manage Availability</h1>
@@ -74,7 +144,7 @@ const removeTiming = (index: number) => {
         <table class="w-full text-left border-collapse">
           <thead>
             <tr class="bg-gray-100">
-              <th class="p-3 border-b">Day</th>
+              <th class="p-3 border-b">Date Range</th>
               <th class="p-3 border-b">Start Time</th>
               <th class="p-3 border-b">End Time</th>
               <th class="p-3 border-b">Action</th>
@@ -82,14 +152,11 @@ const removeTiming = (index: number) => {
           </thead>
           <tbody>
             <tr v-for="(timing, index) in availableTimings" :key="index">
-              <td class="p-3 border-b">{{ timing.day }}</td>
+              <td class="p-3 border-b">{{ timing.dateRange }}</td>
               <td class="p-3 border-b">{{ timing.startTime }}</td>
               <td class="p-3 border-b">{{ timing.endTime }}</td>
               <td class="p-3 border-b">
-                <button
-                  class="bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600"
-                  @click="removeTiming(index)"
-                >
+                <button class="bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600" @click="removeTiming(index)">
                   Remove
                 </button>
               </td>
@@ -105,22 +172,16 @@ const removeTiming = (index: number) => {
       <h2 class="text-lg font-semibold mb-3 text-gray-700">Add Availability</h2>
       <div class="form grid grid-cols-1 md:grid-cols-3 gap-4 bg-white p-4 rounded-lg shadow-md">
         <div>
-          <label for="day" class="font-semibold block mb-2">Day</label>
-          <Dropdown
-            id="day"
-            v-model="selectedDay"
-            :options="['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']"
-            placeholder="Select Day"
-            class="w-full"
-          />
+          <label for="dateRange" class="font-semibold block mb-2">Date Range</label>
+          <Calendar id="dateRange" v-model="dateRange" selectionMode="range" :manualInput="false" class="w-full" :minDate="new Date()" />
         </div>
         <div>
           <label for="startTime" class="font-semibold block mb-2">Start Time</label>
-          <InputText id="startTime" v-model="startTime" placeholder="e.g., 09:00 AM" class="w-full" />
+          <Calendar id="startTime" v-model="startTime" timeOnly hourFormat="12" class="w-full" />
         </div>
         <div>
           <label for="endTime" class="font-semibold block mb-2">End Time</label>
-          <InputText id="endTime" v-model="endTime" placeholder="e.g., 05:00 PM" class="w-full" />
+          <Calendar id="endTime" v-model="endTime" timeOnly hourFormat="12" class="w-full" />
         </div>
       </div>
       <div class="flex justify-end gap-3 mt-4">
@@ -129,24 +190,3 @@ const removeTiming = (index: number) => {
     </div>
   </div>
 </template>
-
-<style scoped>
-.available-timings {
-  max-width: 900px;
-  margin: 0 auto;
-}
-
-.availability-list {
-  margin-top: 1.5rem;
-}
-
-form {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 1rem;
-}
-
-button {
-  cursor: pointer;
-}
-</style>

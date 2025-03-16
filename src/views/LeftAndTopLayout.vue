@@ -29,9 +29,9 @@ const logout = () => {
 <template>
   <main class="">
     <header class="flex items-center justify-between p-4 bg-white text-gray-800">
-        <div class="flex items-center justify-start">
-           <img src="/src/assets/clogo.png" class=" w-1/3 h-1/3"/>
-          </div>
+      <div class="flex items-center">
+        <img src="/src/assets/Happy_waves.png" class="h-12 w-auto" alt="Logo" />
+      </div>
         <div class="flex space-x-4">
           <Button :label="Storage.getAdminName()" icon="fas fa-user-circle" severity="secondary" @click="toggle"  rounded/>
           <Popover ref="op" :dismissable="true" @click="toggle">
