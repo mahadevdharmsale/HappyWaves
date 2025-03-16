@@ -10,11 +10,14 @@ import type { ToastMessageOptions } from 'primevue';
 import { useToast } from "primevue/usetoast";
 import { ref } from 'vue';
 import * as pack from '../../package.json';
+import Dropdown from 'primevue/dropdown';
+
 
 const toast = useToast();
 const isLoading = ref(false);
 const phoneNumber = ref('');
 const password = ref('');
+const loginType = ref('Offline');
 
 if (import.meta.env.VITE_ENVIRONMENT == 'development') {
   phoneNumber.value = '7406492844';
@@ -39,6 +42,7 @@ function login() {
   const request: LoginRequest = {
     phoneNumber: phoneNumber.value,
     password: password.value,
+    loginType: loginType.value,
   };
 
   setTimeout(() => {
@@ -54,7 +58,7 @@ function showToast(summary: string, detail: string, severity: ToastMessageOption
 
 <template>
   <main class="flex items-center justify-center min-h-screen bg-cover bg-center bg-no-repeat px-4 md:px-8 lg:px-16" style="background-image: url('/src/assets/Hospital.jpeg');">
-    <div class="absolute inset-0 bg-black bg-opacity-50"></div>
+    <div class="absolute inset-0 bg-blue-200 bg-opacity-10"></div>
     <Toast class="toast-msg" />
     <LoadingComponent :dialogVisibility="isLoading" text="Logging in..." />
     <div class="flex items-center justify-evenly w-full max-w-8xl overflow-hidden">
@@ -74,6 +78,10 @@ function showToast(summary: string, detail: string, severity: ToastMessageOption
           <FloatLabel>
             <InputText type="password" v-model="password" placeholder="" class="w-full text-lg py-3 px-4 border rounded-lg" @keydown.enter="login" />
             <label class="text-gray-500">Password</label>
+          </FloatLabel>
+          <FloatLabel>
+            <Dropdown v-model="loginType" :options="['Online', 'Offline']" class="w-full text-lg  px-4 border rounded-lg" />
+            <label class="text-gray-500">Login Type</label>
           </FloatLabel>
           <DefaultButton title="Login" @click="login" class="w-full py-4 text-lg font-semibold bg-gradient-to-r from-blue-500 to-blue-700 text-white rounded-lg shadow-lg hover:from-blue-600 hover:to-blue-800" />
         </div>

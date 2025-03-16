@@ -5,6 +5,7 @@ import Column from "primevue/column";
 import Calendar from "primevue/calendar";
 import Dialog from "primevue/dialog";
 import Button from "primevue/button";
+import Conversion from "@/utils/Conversions";
 
 const totalAppointments = ref([
   { patient: "Chris Evans", appointmentDate: "2025-03-10", appointmentTime: "9:00 AM" },
@@ -36,32 +37,12 @@ const sortedAppointments = computed(() => {
   });
 });
 
-
 const filteredAppointments = computed(() => {
   if (!selectedDate.value) return totalAppointments.value;
 
-  // Ensure the selected date is properly formatted to match appointmentDate format
-  const formattedDate = selectedDate.value instanceof Date
-    ? selectedDate.value.toLocaleDateString("en-CA") // Format: YYYY-MM-DD (Canada locale avoids MM/DD issues)
-    : selectedDate.value;
-
-  return totalAppointments.value.filter(appt => appt.appointmentDate === formattedDate);
+  const formattedDate = Conversion.toDateFormat(selectedDate.value.getTime());
+  return totalAppointments.value.filter(appt => Conversion.toDateFormat(new Date(appt.appointmentDate).getTime()) === formattedDate);
 });
-
-// const filteredAppointments = computed(() => {
-//   if (!selectedDate.value) return totalAppointments.value;
-
-//   // Format selectedDate to "YYYY-MM-DD"
-//   const formattedDate = new Date(selectedDate.value).toISOString().split("T")[0];
-
-//   return totalAppointments.value.filter(appt => appt.appointmentDate === formattedDate);
-// });
-
-// const filteredAppointments = computed(() => {
-//   if (!selectedDate.value) return sortedAppointments.value;
-//   const formattedDate = selectedDate.value.toISOString().split("T")[0];
-//   return sortedAppointments.value.filter(appt => appt.appointmentDate === formattedDate);
-// });
 
 const openDetailsModal = (appointment: any) => {
   selectedAppointment.value = appointment;
@@ -101,18 +82,22 @@ const rescheduleAppointment = () => {
   <div class="doctor-card p-6 rounded-card space-y-8">
     <h1 class="text-3xl font-semibold mb-4">Manage Appointments</h1>
 
-    <div class="mb-2">
-  <label class="block text-sm font-medium mb-1">Select Date:</label>
-  <Calendar v-model="selectedDate" dateFormat="yy-mm-dd" class="w-32 p-1 text-sm" />
-</div>
-
+    <div class="date-cart mb-2 ">
+      <label class="block text-sm font-medium mb-1">Select Date:
+        <Calendar v-model="selectedDate" dateFormat="dd-mm-yy" class="w-32 p-1 text-sm" />
+      </label>
+    </div>
 
     <div class="total-appointments">
       <h2 class="text-lg font-semibold mb-4 text-gray-700">Total Appointments</h2>
       <div class="appointment-list bg-white p-6 rounded-lg shadow-md">
         <DataTable :value="filteredAppointments" paginator :rows="5" responsiveLayout="scroll">
           <Column field="patient" header="Patient" />
-          <Column field="appointmentDate" header="Appointment Date" />
+          <Column field="appointmentDate" header="Appointment Date">
+            <template #body="slotProps">
+              {{ Conversion.toDateFormat(new Date(slotProps.data.appointmentDate).getTime()) }}
+            </template>
+          </Column>
           <Column field="appointmentTime" header="Appointment Time" />
           <Column header="Actions">
             <template #body="slotProps">
@@ -131,7 +116,7 @@ const rescheduleAppointment = () => {
     <Dialog v-model:visible="showDetailsModal" header="Appointment Details" :modal="true" class="w-1/3">
       <div class="p-4 space-y-4">
         <p><strong>Patient:</strong> {{ selectedAppointment?.patient }}</p>
-        <p><strong>Date:</strong> {{ selectedAppointment?.appointmentDate }}</p>
+        <p><strong>Date:</strong> {{ Conversion.toDateFormat(new Date(selectedAppointment?.appointmentDate).getTime()) }}</p>
         <p><strong>Time:</strong> {{ selectedAppointment?.appointmentTime }}</p>
       </div>
       <template #footer>
@@ -156,8 +141,7 @@ const rescheduleAppointment = () => {
 </template>
 
 <style scoped>
-.doctor-card {
-  max-width: auto;
-  margin: 0 auto;
+.date-cart{
+  margin-left: 850px;
 }
 </style>

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted, nextTick } from 'vue';
 import Chart from 'chart.js/auto';
+import Conversion from '@/utils/Conversions'; // Ensure this is correctly imported
 
 // Define the dashboard data
 const dashboardData = ref({
@@ -14,14 +15,14 @@ const dashboardData = ref({
       id: "Apt0001",
       type: "Online",
       patient: "John Doe",
-      appointmentDate: "2025-03-15",
+      appointmentDate: Conversion.toDateFormat("2025-03-15"),
       appointmentTime: "10:00 AM",
     },
     {
       id: "Apt0002",
       type: "Offline",
       patient: "Jane Smith",
-      appointmentDate: "2025-03-16",
+      appointmentDate: Conversion.toDateFormat("2025-03-16"),
       appointmentTime: "2:00 PM",
     },
   ],
