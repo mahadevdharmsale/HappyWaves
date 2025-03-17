@@ -79,10 +79,7 @@ function showToast(summary: string, detail: string, severity: ToastMessageOption
             <InputText type="password" v-model="password" placeholder="" class="w-full text-lg py-3 px-4 border rounded-lg" @keydown.enter="login" />
             <label class="text-gray-500">Password</label>
           </FloatLabel>
-          <FloatLabel>
-            <Dropdown v-model="loginType" :options="['Online', 'Offline']" class="w-full text-lg  px-4 border rounded-lg" />
-            <label class="text-gray-500">Login Type</label>
-          </FloatLabel>
+
           <DefaultButton title="Login" @click="login" class="w-full py-4 text-lg font-semibold bg-gradient-to-r from-blue-500 to-blue-700 text-white rounded-lg shadow-lg hover:from-blue-600 hover:to-blue-800" />
         </div>
       </div>
