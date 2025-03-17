@@ -12,7 +12,6 @@ import { ref } from 'vue';
 import * as pack from '../../package.json';
 import Dropdown from 'primevue/dropdown';
 
-
 const toast = useToast();
 const isLoading = ref(false);
 const phoneNumber = ref('');
@@ -61,24 +60,20 @@ function showToast(summary: string, detail: string, severity: ToastMessageOption
     <div class="absolute inset-0 bg-blue-200 bg-opacity-10"></div>
     <Toast class="toast-msg" />
     <LoadingComponent :dialogVisibility="isLoading" text="Logging in..." />
-    <div class="flex items-center justify-evenly w-full max-w-8xl overflow-hidden">
+    <div class="flex flex-col md:flex-row items-center justify-evenly w-full max-w-8xl overflow-hidden">
       <div class="hidden md:block md:w-1/3 lg:w-1/4">
         <img src="/src/assets/Happy_waves.png" alt="Company Logo" class="w-full h-auto brightness-125" />
       </div>
       <div class="w-full md:w-1/2 lg:w-1/3 p-8 bg-white shadow-2xl rounded-2xl backdrop-blur-md bg-opacity-90 border border-gray-200">
         <h2 class="text-3xl font-bold text-gray-900 text-center mb-8">Admin Login</h2>
         <div class="space-y-6">
-          <InputGroup>
-            <InputGroupAddon class="font-bold text-gray-700">+91</InputGroupAddon>
-            <FloatLabel>
-              <InputText v-model="phoneNumber" placeholder="" class="w-full text-lg py-3 px-4 border rounded-lg" @keydown.enter="login" />
-              <label class="text-gray-500">Phone Number</label>
-            </FloatLabel>
-          </InputGroup>
-          <FloatLabel>
-            <InputText type="password" v-model="password" placeholder="" class="w-full text-lg py-3 px-4 border rounded-lg" @keydown.enter="login" />
-            <label class="text-gray-500">Password</label>
-          </FloatLabel>
+          <div class="flex items-center border rounded-lg overflow-hidden">
+            <span class="px-4 text-gray-700 font-bold">+91</span>
+            <input v-model="phoneNumber" type="text" placeholder="Phone Number" class="w-full text-lg py-3 px-4 border-l focus:outline-none" @keydown.enter="login" />
+          </div>
+          <div class="border rounded-lg overflow-hidden">
+            <input v-model="password" type="password" placeholder="Password" class="w-full text-lg py-3 px-4 focus:outline-none" @keydown.enter="login" />
+          </div>
 
           <DefaultButton title="Login" @click="login" class="w-full py-4 text-lg font-semibold bg-gradient-to-r from-blue-500 to-blue-700 text-white rounded-lg shadow-lg hover:from-blue-600 hover:to-blue-800" />
         </div>

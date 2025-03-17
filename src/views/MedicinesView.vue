@@ -14,15 +14,21 @@ const medicines = ref([
 </script>
 
 <template>
-  <div class="doctor-card p-5 rounded-card">
+  <div class="doctor-card p-5 rounded-card max-w-4xl mx-auto">
     <!-- Page Title -->
     <div class="page-title mb-5">
       <h1 class="text-2xl font-semibold text-gray-800">Manage Medicines</h1>
     </div>
 
     <!-- Medicines Table -->
-    <div class="medicines-table bg-white p-4 rounded-lg shadow-md">
-      <DataTable :value="medicines" class="p-datatable-sm" paginator :rows="5">
+    <div class="medicines-table bg-white p-4 rounded-lg shadow-md overflow-x-auto">
+      <DataTable
+        :value="medicines"
+        class="p-datatable-sm min-w-full"
+        paginator
+        :rows="5"
+        responsiveLayout="scroll"
+      >
         <Column field="id" header="ID" sortable></Column>
         <Column field="medicine" header="Medicine" sortable></Column>
         <Column field="stock" header="Stock" sortable></Column>
@@ -32,15 +38,6 @@ const medicines = ref([
 </template>
 
 <style scoped>
-.medicines-view {
-  max-width: 800px;
-  margin: 0 auto;
-}
-
-.page-title {
-  margin-bottom: 1.5rem;
-}
-
 .medicines-table {
   padding: 1rem;
 }
