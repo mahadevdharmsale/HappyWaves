@@ -80,17 +80,18 @@ const rescheduleAppointment = () => {
 
 <template>
   <div class="doctor-card p-6 rounded-card space-y-8">
-    <h1 class="text-3xl font-semibold mb-4">Manage Appointments</h1>
+    <h1 class="text-3xl font-semibold mb-4 text-center md:text-left">Manage Appointments</h1>
 
-    <div class="date-cart mb-2 ">
-      <label class="block text-sm font-medium mb-1">Select Date:
-        <Calendar v-model="selectedDate" dateFormat="dd-mm-yy" class="w-32 p-1 text-sm" />
+    <div class="date-cart flex justify-center md:justify-end">
+      <label class="block text-sm font-medium mb-1">
+        Select Date:
+        <Calendar v-model="selectedDate" dateFormat="dd-mm-yy" class="p-1 text-sm w-full md:w-40" />
       </label>
     </div>
 
     <div class="total-appointments">
       <h2 class="text-lg font-semibold mb-4 text-gray-700">Total Appointments</h2>
-      <div class="appointment-list bg-white p-6 rounded-lg shadow-md">
+      <div class="appointment-list bg-white p-4 md:p-6 rounded-lg shadow-md">
         <DataTable :value="filteredAppointments" paginator :rows="5" responsiveLayout="scroll">
           <Column field="patient" header="Patient" />
           <Column field="appointmentDate" header="Appointment Date">
@@ -101,10 +102,10 @@ const rescheduleAppointment = () => {
           <Column field="appointmentTime" header="Appointment Time" />
           <Column header="Actions">
             <template #body="slotProps">
-              <button @click="openDetailsModal(slotProps.data)" class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 mr-2">
+              <button @click="openDetailsModal(slotProps.data)" class="action-btn bg-blue-500 hover:bg-blue-600">
                 View Details
               </button>
-              <button @click="openRescheduleModal(slotProps.data)" class="bg-yellow-500 text-white px-4 py-2 rounded-md hover:bg-yellow-600">
+              <button @click="openRescheduleModal(slotProps.data)" class="action-btn bg-yellow-500 hover:bg-yellow-600">
                 Reschedule
               </button>
             </template>
@@ -113,7 +114,8 @@ const rescheduleAppointment = () => {
       </div>
     </div>
 
-    <Dialog v-model:visible="showDetailsModal" header="Appointment Details" :modal="true" class="w-1/3">
+    <!-- Appointment Details Modal -->
+    <Dialog v-model:visible="showDetailsModal" header="Appointment Details" :modal="true" class="w-full max-w-md">
       <div class="p-4 space-y-4">
         <p><strong>Patient:</strong> {{ selectedAppointment?.patient }}</p>
         <p><strong>Date:</strong> {{ Conversion.toDateFormat(new Date(selectedAppointment?.appointmentDate).getTime()) }}</p>
@@ -124,7 +126,8 @@ const rescheduleAppointment = () => {
       </template>
     </Dialog>
 
-    <Dialog v-model:visible="showRescheduleModal" header="Reschedule Appointment" :modal="true" class="w-1/3">
+    <!-- Reschedule Appointment Modal -->
+    <Dialog v-model:visible="showRescheduleModal" header="Reschedule Appointment" :modal="true" class="w-full max-w-md">
       <div class="p-4">
         <label class="block mb-2 font-semibold">New Date:</label>
         <input v-model="newDate" type="date" class="w-full p-2 border rounded mb-3" />
@@ -141,7 +144,35 @@ const rescheduleAppointment = () => {
 </template>
 
 <style scoped>
-.date-cart{
-  margin-left: 850px;
+.date-cart {
+  margin-bottom: 1rem;
+}
+
+.appointment-list {
+  overflow-x: auto;
+}
+
+.action-btn {
+  padding: 8px 12px;
+  color: white;
+  border-radius: 5px;
+  margin-right: 8px;
+}
+
+@media (max-width: 768px) {
+  .doctor-card {
+    padding: 1rem;
+  }
+
+  .date-cart {
+    justify-content: center;
+  }
+
+  .action-btn {
+    display: block;
+    width: 100%;
+    text-align: center;
+    margin-bottom: 8px;
+  }
 }
 </style>

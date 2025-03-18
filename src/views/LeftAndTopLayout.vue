@@ -1,19 +1,19 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
 import router from '@/router';
 import Storage from '@/utils/Storage';
 import MenuItems from '@/utils/MenuItems';
 import type { MenuItem } from 'primevue/menuitem';
-import Dropdown from 'primevue/dropdown'; // ✅ Import Dropdown
-import Button from 'primevue/button'; // ✅ Import Button
-import Popover from 'primevue/overlaypanel'; // ✅ Import Popover
+import Dropdown from 'primevue/dropdown';
+import Button from 'primevue/button';
+import Popover from 'primevue/overlaypanel';
 import PanelMenu from 'primevue/panelmenu';
 import Drawer from 'primevue/sidebar';
 
 const showLeftNav = ref(true);
 const isMobile = ref(false);
 const op = ref();
-const status = ref("Offline"); // Default status is "Offline"
+const status = ref("Offline"); // Default status
 
 const toggle = (event: Event) => {
   op.value.toggle(event);
@@ -23,72 +23,67 @@ const logout = () => {
   Storage.clearData();
   router.push({ name: 'login' });
 };
+
+const checkScreenSize = () => {
+  isMobile.value = window.innerWidth <= 768;
+  showLeftNav.value = !isMobile.value;
+};
+
+onMounted(() => {
+  checkScreenSize();
+  window.addEventListener('resize', checkScreenSize);
+});
 </script>
 
 <template>
   <main>
-    <header class="flex items-center justify-between p-4 bg-white text-gray-800">
+    <header class="flex items-center justify-between p-4 bg-white text-gray-800 shadow-md">
       <div class="flex items-center">
         <img src="/src/assets/Happy_waves.png" class="h-12 w-auto" alt="Logo" />
       </div>
-        <div class="flex space-x-4">
-          <Button :label="Storage.getAdminName()" icon="fas fa-user-circle" severity="secondary" @click="toggle" rounded/>
-          <Popover ref="op" :dismissable="true">
-            <div class="flex flex-col p-3">
-              <p class="p-1 font-bold border-b-2">Admin Profile</p>
-              <p class="px-3 py-1">Name: <b>{{ Storage.getAdminName() }}</b></p>
-              <p class="px-3 py-1">Email: <b>{{ Storage.getAdminEmail() }}</b></p>
-              <p class="px-3 py-1">Role: <b>{{ Storage.getAdminRole() }}</b></p>
-              <p class="px-3 py-1">ID/Phone No: <b>{{ Storage.getAdminId() }}</b></p>
-              <p class="px-3 py-1 font-bold">Status:</p>
-              <!-- ✅ Fix: Ensure Dropdown works properly -->
-              <Dropdown v-model="status" :options="['Online', 'Offline']" placeholder="Select Status" class="custom-dropdown" />
-            </div>
-            <button
-                class="text-red-500 border-2 w-full p-1 rounded-md border-red-500 hover:text-white hover:bg-red-600"
-                @click="logout">
-                  <i class="fa fa-sign-out mr-2"></i>Signout
-            </button>
-          </Popover>
-        </div>
-      </header>
+      <div class="flex items-center space-x-4">
+        <!-- Status Dropdown -->
+        <Dropdown v-model="status" :options="['Online', 'Offline']" placeholder="Select Status" class="custom-dropdown w-32" />
 
-      <div class="flex w-full">
-        <aside class="bg-white shadow-lg w-72 m-2 rounded-xl min-h-screen p-2 flex flex-col justify-between" v-if="showLeftNav">
-          <PanelMenu :model="MenuItems.ADMIN_MENU_ITEMS" multiple class="sidebar">
-            <template #item="{ item }">
-              <a v-ripple class="flex items-center px-4 py-2 cursor-pointer group">
-                <span :class="[item.icon, '']" />
-                <span :class="['ml-2', { ' font-medium': item.items }]">{{ item.label }}</span>
-                <span v-if="item.shortcut" class="ml-auto border border-surface rounded bg-emphasis text-muted-color text-xs p-1">{{ item.shortcut }}</span>
-                <span v-if="item.items" class="pi pi-angle-down text-primary ml-auto" />
-              </a>
-            </template>
-          </PanelMenu>
-        </aside>
+        <!-- Profile Button -->
+        <Button :label="Storage.getAdminName()" icon="fas fa-user-circle" severity="secondary" @click="toggle" rounded />
 
-        <Drawer v-model:visible="isMobile" header="Menu" role="region">
-          <PanelMenu :model="MenuItems.ADMIN_MENU_ITEMS" multiple class="sidebar">
-            <template #item="{ item }">
-              <a v-ripple class="flex items-center px-4 py-2 cursor-pointer group">
-                <span :class="[item.icon, '']" />
-                <span :class="['ml-2', { ' font-medium': item.items }]">{{ item.label }}</span>
-                <span v-if="item.shortcut" class="ml-auto border border-surface rounded bg-emphasis text-muted-color text-xs p-1">{{ item.shortcut }}</span>
-                <span v-if="item.items" class="pi pi-angle-down text-primary ml-auto" />
-              </a>
-            </template>
-          </PanelMenu>
-        </Drawer>
+        <!-- Mobile Menu Button -->
+        <Button icon="pi pi-bars" class="md:hidden" @click="isMobile = !isMobile" />
 
-        <main class="w-full m-2">
-          <RouterView class="bg-white"/>
-        </main>
+        <!-- Popover for Profile Details -->
+        <Popover ref="op" :dismissable="true">
+          <div class="flex flex-col p-3">
+            <p class="p-1 font-bold border-b-2">Admin Profile</p>
+            <p class="px-3 py-1">Name: <b>{{ Storage.getAdminName() }}</b></p>
+            <p class="px-3 py-1">Email: <b>{{ Storage.getAdminEmail() }}</b></p>
+            <p class="px-3 py-1">Role: <b>{{ Storage.getAdminRole() }}</b></p>
+            <p class="px-3 py-1">ID/Phone No: <b>{{ Storage.getAdminId() }}</b></p>
+          </div>
+          <button class="text-red-500 border-2 w-full p-1 rounded-md border-red-500 hover:text-white hover:bg-red-600" @click="logout">
+            <i class="fa fa-sign-out mr-2"></i>Signout
+          </button>
+        </Popover>
       </div>
+    </header>
+
+    <div class="flex w-full">
+      <aside v-if="showLeftNav" class="bg-white shadow-lg w-72 m-2 rounded-xl min-h-screen p-2 hidden md:flex flex-col justify-between">
+        <PanelMenu :model="MenuItems.ADMIN_MENU_ITEMS" multiple class="sidebar" />
+      </aside>
+
+      <Drawer v-model:visible="isMobile" header="Menu" role="region" class="md:hidden">
+        <PanelMenu :model="MenuItems.ADMIN_MENU_ITEMS" multiple class="sidebar" />
+      </Drawer>
+
+      <main class="w-full m-2">
+        <RouterView class="bg-white" />
+      </main>
+    </div>
   </main>
 </template>
 
 <style>
-/* ✅ Fix: Apply styles properly for dropdown */
 .custom-dropdown .p-dropdown {
   background-color: white !important;
   color: black !important;
